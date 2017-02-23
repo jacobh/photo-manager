@@ -1,7 +1,7 @@
 // @flow
-import React, { Component } from 'react';
-import { Link } from 'react-router';
-import styles from './Counter.css';
+import React, { Component } from "react";
+import { Link } from "react-router";
+import styles from "./Counter.css";
 
 class Counter extends Component {
   props: {
@@ -13,7 +13,13 @@ class Counter extends Component {
   };
 
   render() {
-    const { increment, incrementIfOdd, incrementAsync, decrement, counter } = this.props;
+    const {
+      increment,
+      incrementIfOdd,
+      incrementAsync,
+      decrement,
+      counter
+    } = this.props;
     return (
       <div>
         <div className={styles.backButton}>
@@ -32,7 +38,9 @@ class Counter extends Component {
             <i className="fa fa-minus" />
           </button>
           <button className={styles.btn} onClick={incrementIfOdd}>odd</button>
-          <button className={styles.btn} onClick={() => incrementAsync()}>async</button>
+          <button className={styles.btn} onClick={() => incrementAsync()}>
+            async
+          </button>
         </div>
       </div>
     );
