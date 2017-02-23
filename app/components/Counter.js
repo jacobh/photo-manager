@@ -1,7 +1,7 @@
 // @flow
-import React, { Component } from "react";
-import { Link } from "react-router";
-import styles from "./Counter.css";
+import React, {Component} from 'react';
+import {Link} from 'react-router';
+import styles from './Counter.css';
 
 class Counter extends Component {
   props: {
@@ -9,7 +9,7 @@ class Counter extends Component {
     incrementIfOdd: () => void,
     incrementAsync: () => void,
     decrement: () => void,
-    counter: number
+    counter: number,
   };
 
   render() {
@@ -18,7 +18,7 @@ class Counter extends Component {
       incrementIfOdd,
       incrementAsync,
       decrement,
-      counter
+      counter,
     } = this.props;
     return (
       <div>
