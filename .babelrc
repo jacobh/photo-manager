@@ -1,10 +1,10 @@
 {
   "presets": [
     ["env", { "targets": { "node": 6 }, "useBuiltIns": true }],
-    "stage-0",
+    "latest",
     "react"
   ],
-  "plugins": ["add-module-exports"],
+  "plugins": ["add-module-exports", "transform-object-rest-spread"],
   "env": {
     "production": {
       "presets": ["react-optimize"],
