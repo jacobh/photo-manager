@@ -3,6 +3,7 @@ import React, {Component} from 'react';
 import Home from '../components/Home';
 import glob from 'glob';
 const {dialog} = require('electron').remote;
+const {exec} = require('child_process');
 
 export default class HomePage extends Component {
   constructor(props) {
@@ -38,6 +39,17 @@ export default class HomePage extends Component {
     glob.glob(`${this.state.photosDirectory}/**/*.*`, (err, files) => {
       console.log('files loaded', err);
       this.setState({files});
+      for (let file of files) {
+        exec(`./bin/libraw/bin/dcraw_emu -W -T "${file}"`, () => {
+          exec(
+            `./bin/libwebp/examples/cwebp -q 85 -m 6 "${file}.tiff" -o "${file}.webp"`,
+            () => {
+              exec(`rm ""${file}.tiff"`);
+            },
+          );
+        });
+        console.log(file);
+      }
     });
   }
 
