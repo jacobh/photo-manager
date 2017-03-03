@@ -1,8 +1,10 @@
 // @flow
 import React, {Component} from 'react';
+import Immutable from 'immutable';
 import Home from '../components/Home';
 import glob from 'glob';
 import sizeOf from 'image-size';
+import {hashFilePath} from '../utils/hash.js';
 const {dialog} = require('electron').remote;
 const {exec} = require('child_process');
 
@@ -29,7 +31,7 @@ export default class HomePage extends Component {
     super(props);
     this.state = {
       photosDirectory: undefined,
-      files: [],
+      files: Immutable.Map(),
     };
     this.loadFiles = this.loadFiles.bind(this);
     this.displayPhotosDirectoryDialog = this.displayPhotosDirectoryDialog.bind(
@@ -59,12 +61,21 @@ export default class HomePage extends Component {
       files,
     ) => {
       console.log('files loaded', err);
-      this.setState({files});
       for (let file of files) {
+        let hash = hashFilePath(file);
+        this.setState(currentState => {
+          return {
+            files: currentState.files.set(
+              hash,
+              Immutable.Map({hash, path: file}),
+            ),
+          };
+        });
         exec(`nice -20 ./bin/libraw/bin/dcraw_emu -W -T "${file}"`, () => {
           const dimensions = sizeOf(file);
           console.log(dimensions);
           for (let [label, size] of SIZES) {
+            let path = `${file}.${label}.webp`;
             exec(
               `nice -20 ./bin/libwebp/examples/cwebp \
                 -preset photo \
@@ -72,10 +83,21 @@ export default class HomePage extends Component {
                 -q 80 \
                 -m 6 \
                 "${file}.tiff" \
-                -o "${file}.${label}.webp"
+                -o "${path}"
               `,
               err => {
-                console.log(err);
+                if (err) {
+                  console.log(err);
+                } else {
+                  this.setState(currentState => {
+                    return {
+                      files: currentState.files.setIn(
+                        [hash, `${label}Path`],
+                        path,
+                      ),
+                    };
+                  });
+                }
               },
             );
           }
@@ -91,7 +113,11 @@ export default class HomePage extends Component {
     return (
       <div>
         <ul>
-          {this.state.files.map(file => <li key={file}>{file}</li>)}
+          {this.state.files.map(file => (
+            <li key={file.get('hash')}>
+              <img src={`file://${file.get('thumbnailPath')}`} />
+            </li>
+          ))}
         </ul>
       </div>
     );
