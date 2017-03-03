@@ -27,7 +27,7 @@
     "cleanup": "mop -v",
     "lint:staged": "lint-staged"
   },
-  "browserslist": "electron 1.4",
+  "browserslist": "chrome >= 53",
   "build": {
     "productName": "ElectronReact",
     "appId": "org.develar.ElectronReact",
@@ -107,8 +107,7 @@
     "babel-plugin-transform-object-rest-spread": "^6.23.0",
     "babel-plugin-webpack-loaders": "^0.8.0",
     "babel-polyfill": "^6.22.0",
-    "babel-preset-env": "^1.1.8",
-    "babel-preset-latest": "^6.22.0",
+    "babel-preset-env": "^1.1.11",
     "babel-preset-react": "^6.22.0",
     "babel-preset-react-hmre": "^1.1.1",
     "babel-preset-react-optimize": "^1.0.1",
@@ -151,9 +150,11 @@
     "webpack-validator": "^2.3.0"
   },
   "dependencies": {
+    "autoprefixer": "^6.7.6",
     "electron-debug": "^1.1.0",
     "font-awesome": "^4.7.0",
     "glob": "^7.1.1",
+    "image-size": "^0.5.1",
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
     "react-redux": "^5.0.2",
