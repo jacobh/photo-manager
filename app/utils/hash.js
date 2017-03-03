@@ -1,5 +1,5 @@
-import sha1 from 'sha1';
-import {readFile} from 'fs';
+import sha1 from "sha1";
+import { readFile } from "fs";
 
 export function hashFilePath(path) {
   return new Promise(resolve => {

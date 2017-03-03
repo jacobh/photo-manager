@@ -1,22 +1,22 @@
 // @flow
-import React, {Component} from 'react';
-import Immutable from 'immutable';
-import Home from '../components/Home';
-import glob from 'glob';
-import sizeOf from 'image-size';
-import {hashFilePath} from '../utils/hash.js';
-const {dialog} = require('electron').remote;
-const {exec} = require('child_process');
+import React, { Component } from "react";
+import Immutable from "immutable";
+import Home from "../components/Home";
+import glob from "glob";
+import sizeOf from "image-size";
+import { hashFilePath } from "../utils/hash.js";
+const { dialog } = require("electron").remote;
+const { exec } = require("child_process");
 
 const SIZES = new Map([
-  ['thumbnail', 200],
-  ['large', 2000],
-  ['original', Infinity],
+  ["thumbnail", 200],
+  ["large", 2000],
+  ["original", Infinity]
 ]);
 
 function resizeToFitArg(dimensions, maxSize) {
   if (maxSize === Infinity) {
-    return '';
+    return "";
   }
   if (dimensions.width > dimensions.height) {
     return `-resize ${maxSize} 0`;
@@ -27,16 +27,16 @@ function resizeToFitArg(dimensions, maxSize) {
 
 export default class HomePage extends Component {
   constructor(props) {
-    console.log('constructing,,');
+    console.log("constructing,,");
     super(props);
     this.state = {
       photosDirectory: undefined,
-      files: Immutable.Map(),
+      files: Immutable.Map()
     };
     this.loadFiles = this.loadFiles.bind(this);
     this.processRawFile = this.processRawFile.bind(this);
     this.displayPhotosDirectoryDialog = this.displayPhotosDirectoryDialog.bind(
-      this,
+      this
     );
   }
 
@@ -46,10 +46,10 @@ export default class HomePage extends Component {
 
   async displayPhotosDirectoryDialog() {
     const photosDirectory = dialog.showOpenDialog({
-      title: 'Select Photos Directory',
-      properties: ['openDirectory'],
+      title: "Select Photos Directory",
+      properties: ["openDirectory"]
     })[0];
-    this.setState({photosDirectory}, () => {
+    this.setState({ photosDirectory }, () => {
       this.loadFiles();
     });
   }
@@ -60,8 +60,8 @@ export default class HomePage extends Component {
       return {
         files: currentState.files.set(
           hash,
-          Immutable.Map({hash, path: filePath}),
-        ),
+          Immutable.Map({ hash, path: filePath })
+        )
       };
     });
     exec(`nice -20 ./bin/libraw/bin/dcraw_emu -W -T "${filePath}"`, () => {
@@ -85,12 +85,12 @@ export default class HomePage extends Component {
                 return {
                   files: currentState.files.setIn(
                     [hash, `${label}Path`],
-                    resizePath,
-                  ),
+                    resizePath
+                  )
                 };
               });
             }
-          },
+          }
         );
       }
     });
@@ -98,13 +98,13 @@ export default class HomePage extends Component {
   }
 
   loadFiles() {
-    console.log('loading files...');
+    console.log("loading files...");
     console.log(this.state.photosDirectory);
-    glob.glob(`${this.state.photosDirectory}/**/*.dng`, {nocase: true}, (
+    glob.glob(`${this.state.photosDirectory}/**/*.dng`, { nocase: true }, (
       err,
-      files,
+      files
     ) => {
-      console.log('files loaded', err);
+      console.log("files loaded", err);
       for (let file of files) {
         this.processRawFile(file);
       }
@@ -112,14 +112,14 @@ export default class HomePage extends Component {
   }
 
   render() {
-    console.log('render home page');
+    console.log("render home page");
     console.log(this.state);
     return (
       <div>
         <ul>
           {this.state.files.map(file => (
-            <li key={file.get('hash')}>
-              <img src={`file://${file.get('thumbnailPath')}`} />
+            <li key={file.get("hash")}>
+              <img src={`file://${file.get("thumbnailPath")}`} />
             </li>
           ))}
         </ul>
