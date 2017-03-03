@@ -34,6 +34,7 @@ export default class HomePage extends Component {
       files: Immutable.Map(),
     };
     this.loadFiles = this.loadFiles.bind(this);
+    this.processRawFile = this.processRawFile.bind(this);
     this.displayPhotosDirectoryDialog = this.displayPhotosDirectoryDialog.bind(
       this,
     );
@@ -53,6 +54,49 @@ export default class HomePage extends Component {
     });
   }
 
+  async processRawFile(filePath) {
+    const hash = await hashFilePath(filePath);
+    this.setState(currentState => {
+      return {
+        files: currentState.files.set(
+          hash,
+          Immutable.Map({hash, path: filePath}),
+        ),
+      };
+    });
+    exec(`nice -20 ./bin/libraw/bin/dcraw_emu -W -T "${filePath}"`, () => {
+      const dimensions = sizeOf(filePath);
+      for (let [label, size] of SIZES) {
+        let resizePath = `${filePath}.${label}.webp`;
+        exec(
+          `nice -20 ./bin/libwebp/examples/cwebp \
+            -preset photo \
+            ${resizeToFitArg(dimensions, size)} \
+            -q 80 \
+            -m 6 \
+            "${filePath}.tiff" \
+            -o "${resizePath}"
+          `,
+          err => {
+            if (err) {
+              console.log(err);
+            } else {
+              this.setState(currentState => {
+                return {
+                  files: currentState.files.setIn(
+                    [hash, `${label}Path`],
+                    resizePath,
+                  ),
+                };
+              });
+            }
+          },
+        );
+      }
+    });
+    console.log(filePath);
+  }
+
   loadFiles() {
     console.log('loading files...');
     console.log(this.state.photosDirectory);
@@ -62,47 +106,7 @@ export default class HomePage extends Component {
     ) => {
       console.log('files loaded', err);
       for (let file of files) {
-        let hash = hashFilePath(file);
-        this.setState(currentState => {
-          return {
-            files: currentState.files.set(
-              hash,
-              Immutable.Map({hash, path: file}),
-            ),
-          };
-        });
-        exec(`nice -20 ./bin/libraw/bin/dcraw_emu -W -T "${file}"`, () => {
-          const dimensions = sizeOf(file);
-          console.log(dimensions);
-          for (let [label, size] of SIZES) {
-            let path = `${file}.${label}.webp`;
-            exec(
-              `nice -20 ./bin/libwebp/examples/cwebp \
-                -preset photo \
-                ${resizeToFitArg(dimensions, size)} \
-                -q 80 \
-                -m 6 \
-                "${file}.tiff" \
-                -o "${path}"
-              `,
-              err => {
-                if (err) {
-                  console.log(err);
-                } else {
-                  this.setState(currentState => {
-                    return {
-                      files: currentState.files.setIn(
-                        [hash, `${label}Path`],
-                        path,
-                      ),
-                    };
-                  });
-                }
-              },
-            );
-          }
-        });
-        console.log(file);
+        this.processRawFile(file);
       }
     });
   }

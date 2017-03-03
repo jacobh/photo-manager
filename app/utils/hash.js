@@ -1,7 +1,11 @@
 import sha1 from 'sha1';
-import {readFileSync} from 'fs';
+import {readFile} from 'fs';
 
 export function hashFilePath(path) {
-  const data = readFileSync(path);
-  return sha1(data);
+  return new Promise(resolve => {
+    readFile(path, (err, data) => {
+      const hash = sha1(data);
+      resolve(hash);
+    });
+  });
 }
