@@ -4,7 +4,7 @@ import Immutable from "immutable";
 import Home from "../components/Home";
 import glob from "glob";
 import sizeOf from "image-size";
-import { hashFilePath } from "../utils/hash.js";
+import sha1File from "sha1-file";
 const { dialog } = require("electron").remote;
 const { exec } = require("child_process");
 
@@ -55,7 +55,6 @@ export default class HomePage extends Component {
   }
 
   async processRawFile(filePath) {
-    const hash = await hashFilePath(filePath);
     this.setState(currentState => {
       return {
         files: currentState.files.set(
@@ -95,6 +94,7 @@ export default class HomePage extends Component {
       }
     });
     console.log(filePath);
+    const hash = sha1File(filePath);
   }
 
   loadFiles() {
