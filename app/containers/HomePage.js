@@ -3,10 +3,11 @@ import React, { Component } from "react";
 import Immutable from "immutable";
 import Home from "../components/Home";
 import glob from "glob";
-import sizeOf from "image-size";
 import sha1File from "sha1-file";
 const { dialog } = require("electron").remote;
-const { exec } = require("child_process");
+
+import { connect } from "react-redux";
+import { createPhoto, generateOriginalPreview } from "../actions/photos";
 
 const SIZES = new Map([
   ["thumbnail", 200],
@@ -25,7 +26,7 @@ function resizeToFitArg(dimensions, maxSize) {
   }
 }
 
-export default class HomePage extends Component {
+class HomePage extends Component {
   constructor(props) {
     console.log("constructing,,");
     super(props);
@@ -55,46 +56,9 @@ export default class HomePage extends Component {
   }
 
   async processRawFile(filePath) {
-    this.setState(currentState => {
-      return {
-        files: currentState.files.set(
-          hash,
-          Immutable.Map({ hash, path: filePath })
-        )
-      };
-    });
-    exec(`nice -20 ./bin/libraw/bin/dcraw_emu -W -T "${filePath}"`, () => {
-      const dimensions = sizeOf(filePath);
-      for (let [label, size] of SIZES) {
-        let resizePath = `${filePath}.${label}.webp`;
-        exec(
-          `nice -20 ./bin/libwebp/examples/cwebp \
-            -preset photo \
-            ${resizeToFitArg(dimensions, size)} \
-            -q 80 \
-            -m 6 \
-            "${filePath}.tiff" \
-            -o "${resizePath}"
-          `,
-          err => {
-            if (err) {
-              console.log(err);
-            } else {
-              this.setState(currentState => {
-                return {
-                  files: currentState.files.setIn(
-                    [hash, `${label}Path`],
-                    resizePath
-                  )
-                };
-              });
-            }
-          }
-        );
-      }
-    });
-    console.log(filePath);
     const hash = sha1File(filePath);
+    this.props.dispatch(createPhoto(hash, filePath));
+    this.props.dispatch(generateOriginalPreview(hash));
   }
 
   loadFiles() {
@@ -117,9 +81,9 @@ export default class HomePage extends Component {
     return (
       <div>
         <ul>
-          {this.state.files.map(file => (
-            <li key={file.get("hash")}>
-              <img src={`file://${file.get("thumbnailPath")}`} />
+          {this.props.photos.toSet().map(photo => (
+            <li key={photo.get("hash")}>
+              <img src={`file://${photo.get("originalPath")}`} />
             </li>
           ))}
         </ul>
@@ -127,3 +91,5 @@ export default class HomePage extends Component {
     );
   }
 }
+
+export default connect(state => ({ photos: state.photos }))(HomePage);
